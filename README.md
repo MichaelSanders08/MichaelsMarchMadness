@@ -51,3 +51,7 @@ npm test
 Tests cover tournament shape, deterministic fills, manual picks, downstream invalidation, chalk behavior, symmetric probabilities, field validation, export roundtrips, and invalid selections. GitHub Actions runs the same suite.
 
 GitHub Pages serves the root of `main`. All app URLs are relative so project-site hosting works. MIT licensed. Independent project; not affiliated with the NCAA.
+
+## Follow the tournament
+
+Switch from **My predictions** to **Record results** to enter actual winners on a separate board. Scoring uses 1–2–4–8–16–32 points by round (192 maximum). Earned points, remaining potential and a round breakdown update after each result; an eliminated predicted champion loses its future potential immediately. Export includes both boards. Earlier version 1 exports still import. Results are manual; the app does not claim a live feed or enforce contest locks. Changing the field clears both boards.

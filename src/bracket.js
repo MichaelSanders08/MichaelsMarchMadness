@@ -70,5 +70,19 @@ export function restore(raw) {
   if (!raw || raw.version !== 1) throw new Error('Use a version 1 bracket export.');
   const field = validateField(raw.field);
   if (!Number.isFinite(raw.chaos) || raw.chaos < 0 || raw.chaos > 100 || typeof raw.seed !== 'string' || raw.seed.length > 100) throw new Error('Invalid seed or chaos setting.');
-  return {version:1, field, label:typeof raw.label === 'string' ? raw.label.slice(0,100) : 'Custom field', picks:normalizePicks(field, raw.picks), seed:raw.seed, chaos:raw.chaos};
+  return {version:1, field, label:typeof raw.label === 'string' ? raw.label.slice(0,100) : 'Custom field', picks:normalizePicks(field, raw.picks), seed:raw.seed, chaos:raw.chaos,...(raw.results!==undefined?{results:normalizePicks(field,raw.results)}:{})};
+}
+export function scoreBracket(field,picks,results={}) {
+  const predicted=games(field,picks),actual=games(field,results);
+  const eliminated=new Set(actual.flat().filter(g=>g.winner).flatMap(g=>g.teams.filter(t=>t.id!==g.winner.id).map(t=>t.id)));
+  const rounds=predicted.map((round,r)=>{
+    const entries=round.map((g,i)=>{
+      const result=actual[r][i],points=2**r;
+      const status=!g.winner?'unpicked':result.winner?(result.winner.id===g.winner.id?'correct':'missed'):eliminated.has(g.winner.id)?'eliminated':'alive';
+      return {id:g.id,status,points,earned:status==='correct'?points:0,remaining:status==='alive'?points:0};
+    });
+    return {name:ROUND_NAMES[r],entries,earned:entries.reduce((n,e)=>n+e.earned,0),remaining:entries.reduce((n,e)=>n+e.remaining,0),correct:entries.filter(e=>e.status==='correct').length,recorded:actual[r].filter(g=>g.winner).length};
+  });
+  const earned=rounds.reduce((n,r)=>n+r.earned,0),remaining=rounds.reduce((n,r)=>n+r.remaining,0);
+  return {rounds,earned,remaining,maximum:earned+remaining,recorded:actual.flat().filter(g=>g.winner).length};
 }
